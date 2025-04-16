@@ -17,7 +17,7 @@ class DivarSpiderSpider(scrapy.Spider):
         return DivarSpiderSpider.time_threshold() < datetime.datetime.fromtimestamp(int(epoch)/1000000.0).date()
 
     def start_requests(self):
-        with open('/home/alireza/crawler/crawler-master/divar/cities.json', 'r') as f:
+        with open('/home/alireza/crawler/divar/cities.json', 'r') as f:
             cities = json.load(f)
             for city in cities:
                 url = "https://api.divar.ir/v8/postlist/w/search"
@@ -66,66 +66,64 @@ class DivarSpiderSpider(scrapy.Spider):
         last_post_date = pagination.get("data").get("last_post_date")
         search_uid = pagination.get("data").get("search_uid")
         tokens = data.get('action_log').get('server_side_info').get('info').get('posts_metadata')
-        if DivarSpiderSpider.compare_date(last_post_date_epoch):
-            if pagination is not None:
-                page = pagination.get("data").get('page', 0)
-                next_page = int(page) + 1
-                for token in tokens:
-                    post_token = token.get('token')
-                    yield scrapy.Request(
-                        url=f'https://api.divar.ir/v8/posts-v2/web/{post_token}', callback=self.parse_post, meta={'city': city})
-                if has_next_page:
-                    payload_next_page = {
-                        "city_ids": [
-                            city
-                        ],
-                        "pagination_data": {
-                            "@type": "type.googleapis.com/post_list.PaginationData",
-                            "last_post_date": last_post_date,
-                            "page": next_page,
-                            "layer_page": next_page,
-                            "search_uid": search_uid
-                        },
-                        "disable_recommendation": False,
-                        "map_state": {
-                            "camera_info": {
-                            "bbox": {}
+        page = pagination.get("data").get('page')
+        if DivarSpiderSpider.compare_date(last_post_date_epoch):       
+            for token in tokens:
+                post_token = token.get('token')
+                yield scrapy.Request(
+                    url=f'https://api.divar.ir/v8/posts-v2/web/{post_token}', callback=self.parse_post, meta={'city': city})
+            if has_next_page:
+                payload_next_page = {
+                    "city_ids": [
+                        city
+                    ],
+                    "pagination_data": {
+                        "@type": "type.googleapis.com/post_list.PaginationData",
+                        "last_post_date": last_post_date,
+                        "page": int(page),
+                        "layer_page": int(page),
+                        "search_uid": search_uid
+                    },
+                    "disable_recommendation": False,
+                    "map_state": {
+                        "camera_info": {
+                        "bbox": {}
+                        }
+                    },
+                    "search_data": {
+                        "form_data": {
+                        "data": {
+                            "category": {
+                            "str": {
+                                "value": "residential-sell"
                             }
+                            }
+                        }
                         },
-                        "search_data": {
-                            "form_data": {
+                        "server_payload": {
+                        "@type": "type.googleapis.com/widgets.SearchData.ServerPayload",
+                        "additional_form_data": {
                             "data": {
-                                "category": {
+                            "sort": {
                                 "str": {
-                                    "value": "residential-sell"
-                                }
-                                }
-                            }
-                            },
-                            "server_payload": {
-                            "@type": "type.googleapis.com/widgets.SearchData.ServerPayload",
-                            "additional_form_data": {
-                                "data": {
-                                "sort": {
-                                    "str": {
-                                    "value": "sort_date"
-                                    }
-                                }
+                                "value": "sort_date"
                                 }
                             }
                             }
                         }
+                        }
                     }
-                    url = "https://api.divar.ir/v8/postlist/w/search"
-                    payload = json.dumps(payload_next_page)
-                    yield scrapy.Request(
-                        url=url, 
-                        method='POST',
-                        body=payload,
-                        headers={'Content-Type': 'application/json'},
-                        callback=self.parse,
-                        meta={'city': city}
-                    )
+                }
+                url = "https://api.divar.ir/v8/postlist/w/search"
+                payload = json.dumps(payload_next_page)
+                yield scrapy.Request(
+                    url=url, 
+                    method='POST',
+                    body=payload,
+                    headers={'Content-Type': 'application/json'},
+                    callback=self.parse,
+                    meta={'city': city}
+                )
 
     def parse_post(self, response): 
         result = {}
