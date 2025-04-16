@@ -1,1 +1,2 @@
 Scrapy==2.12.0
+user-agents==2.2.0
