@@ -20,7 +20,8 @@ NEWSPIDER_MODULE = 'divar.spiders'
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-RETRY_TIMES = 1000
+
+# CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -31,7 +32,7 @@ RETRY_TIMES = 1000
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-COOKIES_ENABLED = True
+COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
@@ -51,8 +52,14 @@ COOKIES_ENABLED = True
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'divar.middlewares.DivarDownloaderMiddleware': 400,
+    'divar.middlewares.DivarDownloaderMiddleware': None,
+    'random_useragent.RandomUserAgentMiddleware': 400,
 }
+
+# DOWNLOAD_DELAY = .2
+
+USER_AGENT_LIST = '/home/alireza/crawler/useragents.txt'
+RETRY_TIMES = 1000
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
